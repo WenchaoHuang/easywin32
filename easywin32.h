@@ -148,7 +148,23 @@ namespace easywin32
 	 *				for debugging or logging purposes.
 	 * @param[in]	x - The enum value to convert to a string.
 	 */
-	#define EZWIN32_CASE_TO_STR(x)		case x: return #x
+	#define EZWIN32_CASE_TO_STR(x)					case x: return #x
+
+	/**
+	 *	@brief		Appends the name of a flag (x) to a string if that flag is set.
+	 *	@details	This macro is typically used when you want to convert a bitmask or flag set into a readable string.
+	 */
+	#define EZWIN32_CASE_APPEND_STR(result, flags, x)							\
+																				\
+		if (flags.has(x))														\
+		{																		\
+			if (!result.empty())												\
+			{																	\
+				result += " | ";												\
+			}																	\
+																				\
+			result += #x;														\
+		}
 
 	/*****************************************************************************
 	********************************    Style    *********************************
@@ -160,7 +176,8 @@ namespace easywin32
 	 */
 	enum class Style : DWORD
 	{
-		Overlapped			= WS_OVERLAPPED,			//!< Standard top-level overlapped window
+		// Individual styles
+		Overlapped			= WS_OVERLAPPED,			//!< Standard top-level overlapped window (default)
 		Popup				= WS_POPUP,					//!< Popup window (mutually exclusive with Overlapped/Child)
 		Child				= WS_CHILD,					//!< Child window (cannot have menu bar)
 		Minimize			= WS_MINIMIZE,				//!< Initially minimized
@@ -175,20 +192,55 @@ namespace easywin32
 		HScroll				= WS_HSCROLL,				//!< Horizontal scroll bar
 		SysMenu				= WS_SYSMENU,				//!< System menu (requires Caption)
 		ThickFrame			= WS_THICKFRAME,			//!< Resizable border (size box)
-		Group				= WS_GROUP,					//!< First control in a group (dialog navigation)
-		TabStop				= WS_TABSTOP,				//!< Control can be focused using Tab key
 		MinimizeBox			= WS_MINIMIZEBOX,			//!< Minimize button (requires SysMenu)
 		MaximizeBox			= WS_MAXIMIZEBOX,			//!< Maximize button (requires SysMenu)
-		Caption				= WS_CAPTION,				//!< Title bar (includes WS_BORDER)
-		OverlappedWindow	= WS_OVERLAPPEDWINDOW,		//!< Common top-level window (Overlapped + Caption + SysMenu + ThickFrame + Min/Max boxes)
+
+		// Combined styles
+		Caption				= WS_CAPTION,				//!< Title bar (WS_BORDER + DialogFrame)
 		PopupWindow			= WS_POPUPWINDOW,			//!< Popup + Border + SysMenu
+		OverlappedWindow	= WS_OVERLAPPEDWINDOW,		//!< Common top-level window (Overlapped + Caption + SysMenu + ThickFrame + Min/Max boxes)
+
+		// Alias styles
+		Group				= WS_GROUP,					//!< Same as WS_MINIMIZEBOX. First control in a group (dialog navigation)
+		TabStop				= WS_TABSTOP,				//!< Same as WS_MAXIMIZEBOX. Control can be focused using Tab key
 		SizeBox				= WS_SIZEBOX,				//!< Same as WS_THICKFRAME
 		Tiled				= WS_TILED,					//!< Same as WS_OVERLAPPED
-		TiledWindow			= WS_TILEDWINDOW			//!< Same as WS_OVERLAPPEDWINDOW
+		TiledWindow			= WS_TILEDWINDOW,			//!< Same as WS_OVERLAPPEDWINDOW
+		Resizable			= WS_SIZEBOX,				//!< Same as WS_SIZEBOX
 	};
 
 	//!	@brief	Enables bitwise operators (|, &, ~).
 	EZWIN32_ENABLE_ENUM_FLAGS(Style);
+
+	//!	@brief	Converts a `Flags<Style>` to a readable string.
+	static inline std::string to_string(Flags<Style> styleFlags)
+	{
+		std::string result;
+
+		// Individual
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Popup);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Child);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Minimize);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Visible);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Disabled);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::ClipSiblings);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::ClipChildren);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Maximize);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Border);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::DialogFrame);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::VScroll);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::HScroll);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::SysMenu);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::ThickFrame);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::MinimizeBox);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::MaximizeBox);
+		// Combined
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Caption);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::PopupWindow);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::OverlappedWindow);
+
+		return result.empty() ?	"Style::Overlapped" : result;
+	}
 
 	/*****************************************************************************
 	*******************************    ExStyle    ********************************
@@ -200,6 +252,7 @@ namespace easywin32
 	 */
 	enum class ExStyle : DWORD
 	{
+		// Individual styles
 		AcceptFiles				= WS_EX_ACCEPTFILES,			//!< Accepts drag-drop files.
 		AppWindow				= WS_EX_APPWINDOW,				//!< Forces top-level window onto taskbar when visible.
 		ClientEdge				= WS_EX_CLIENTEDGE,				//!< Border with sunken edge.
@@ -212,13 +265,11 @@ namespace easywin32
 		Left					= WS_EX_LEFT,					//!< Generic left-aligned properties (default).
 		LeftScrollBar			= WS_EX_LEFTSCROLLBAR,			//!< Left-side scroll bar for right-to-left languages.
 		LtrReading				= WS_EX_LTRREADING,				//!< Left-to-right text reading order (default).
-		MdiChild				= WS_EX_MDICHILD,				//!< MDI child window.
+		MDIChild				= WS_EX_MDICHILD,				//!< MDI child window.
 		NoActivate				= WS_EX_NOACTIVATE,				//!< Non-foreground window, not on taskbar by default.
 		NoInheritLayout			= WS_EX_NOINHERITLAYOUT,		//!< Does not pass layout to child windows.
 		NoParentNotify			= WS_EX_NOPARENTNOTIFY,			//!< No WM_PARENTNOTIFY for child creation/destruction.
 		NoRedirectionBitmap		= WS_EX_NOREDIRECTIONBITMAP,	//!< No redirection surface rendering.
-		OverlappedWindow		= WS_EX_OVERLAPPEDWINDOW,		//!< Overlapped window (WINDOWEDGE | CLIENTEDGE).
-		PaletteWindow			= WS_EX_PALETTEWINDOW,			//!< Palette window (WINDOWEDGE | TOOLWINDOW | TOPMOST).
 		Right					= WS_EX_RIGHT,					//!< Right-aligned properties for right-to-left languages.
 		RightScrollBar			= WS_EX_RIGHTSCROLLBAR,			//!< Right-side scroll bar (default).
 		RtlReading				= WS_EX_RTLREADING,				//!< Right-to-left text reading order for supported languages.
@@ -227,10 +278,51 @@ namespace easywin32
 		TopMost					= WS_EX_TOPMOST,				//!< Stays above non-topmost windows.
 		Transparent				= WS_EX_TRANSPARENT,			//!< Delays painting until siblings are painted.
 		WindowEdge				= WS_EX_WINDOWEDGE,				//!< Border with raised edge.
+
+		// Combined styles
+		OverlappedWindow		= WS_EX_OVERLAPPEDWINDOW,		//!< Overlapped window (WINDOWEDGE | CLIENTEDGE).
+		PaletteWindow			= WS_EX_PALETTEWINDOW,			//!< Palette window (WINDOWEDGE | TOOLWINDOW | TOPMOST).
 	};
 
 	//!	@brief	Enables bitwise operators (|, &, ~).
 	EZWIN32_ENABLE_ENUM_FLAGS(ExStyle);
+
+	//!	@brief	Converts a `Flags<ExStyle>` to a readable string.
+	static inline std::string to_string(Flags<ExStyle> exStyleFlags)
+	{
+		std::string result;
+
+		// Individual
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::AcceptFiles);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::AppWindow);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::ClientEdge);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::Composited);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::ContextHelp);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::ControlParent);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::DlgModalFrame);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::Layered);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::LayoutRtl);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::LeftScrollBar);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::LtrReading);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::MDIChild);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::NoActivate);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::NoInheritLayout);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::NoParentNotify);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::NoRedirectionBitmap);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::Right);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::RightScrollBar);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::RtlReading);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::StaticEdge);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::ToolWindow);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::TopMost);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::Transparent);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::WindowEdge);
+		// Combined
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::OverlappedWindow);
+		EZWIN32_CASE_APPEND_STR(result, exStyleFlags, ExStyle::PaletteWindow);
+
+		return result.empty() ? "ExStyle::Left" : result;
+	}
 
 	/*****************************************************************************
 	******************************    CornerStyle    *****************************
@@ -606,24 +698,15 @@ namespace easywin32
 	{
 		std::string result;
 
-		auto append = [&](const char * name)
-		{
-			if (!result.empty())
-				result += " | ";
+		EZWIN32_CASE_APPEND_STR(result, stateFlags, MouseState::Left);
+		EZWIN32_CASE_APPEND_STR(result, stateFlags, MouseState::Right);
+		EZWIN32_CASE_APPEND_STR(result, stateFlags, MouseState::Middle);
+		EZWIN32_CASE_APPEND_STR(result, stateFlags, MouseState::XButton1);
+		EZWIN32_CASE_APPEND_STR(result, stateFlags, MouseState::XButton2);
+		EZWIN32_CASE_APPEND_STR(result, stateFlags, MouseState::Shift);
+		EZWIN32_CASE_APPEND_STR(result, stateFlags, MouseState::Ctrl);
 
-			result += name;
-		};
-
-		if (stateFlags.has(MouseState::Left))		append("MouseState::Left");
-		if (stateFlags.has(MouseState::Right))		append("MouseState::Right");
-		if (stateFlags.has(MouseState::Middle))		append("MouseState::Middle");
-		if (stateFlags.has(MouseState::XButton1))	append("MouseState::XButton1");
-		if (stateFlags.has(MouseState::XButton2))	append("MouseState::XButton2");
-		if (stateFlags.has(MouseState::Shift))		append("MouseState::Shift");
-		if (stateFlags.has(MouseState::Ctrl))		append("MouseState::Ctrl");
-		if (result.empty())							append("MouseState::None");
-
-		return result;
+		return result.empty() ? "MouseState::None" : result;
 	}
 
 	/*****************************************************************************
