@@ -177,43 +177,24 @@ namespace easywin32
 	*****************************************************************************/
 
 	/**
-	 *	@brief	Standard window styles
+	 *	@brief	Window styles
 	 *	@see	https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	 */
-	enum class Style : DWORD
+	enum class Style
 	{
-		// Individual styles
-		Overlapped			= WS_OVERLAPPED,			//!< Standard top-level overlapped window (default)
-		Popup				= WS_POPUP,					//!< Popup window (mutually exclusive with Overlapped/Child)
-		Child				= WS_CHILD,					//!< Child window (cannot have menu bar)
-		Minimize			= WS_MINIMIZE,				//!< Initially minimized
-		Visible				= WS_VISIBLE,				//!< Initially visible
-		Disabled			= WS_DISABLED,				//!< Initially disabled
-		ClipSiblings		= WS_CLIPSIBLINGS,			//!< Clips child windows relative to each other
-		ClipChildren		= WS_CLIPCHILDREN,			//!< Excludes child areas when drawing parent
-		Maximize			= WS_MAXIMIZE,				//!< Initially maximized
-		SysMenu				= WS_SYSMENU,				//!< System menu (requires Caption)
-		ThickFrame			= WS_THICKFRAME,			//!< Resizable border (size box)
-		MinimizeBox			= WS_MINIMIZEBOX,			//!< Minimize button (requires SysMenu)
-		MaximizeBox			= WS_MAXIMIZEBOX,			//!< Maximize button (requires SysMenu)
-		// Deprecated (ugly)
-		Border				= WS_BORDER,				//!< Thin border
-		DialogFrame			= WS_DLGFRAME,				//!< Dialog-style border (cannot have title bar)
-		HScroll				= WS_HSCROLL,				//!< Horizontal scroll bar
-		VScroll				= WS_VSCROLL,				//!< Vertical scroll bar
+		Border				= 1 << 0,							//!< Thin border
+		Visible				= 1 << 1,							//!< Initially visible
+		SysMenu				= 1 << 2,							//!< System menu (requires `Caption`)
+		Disabled			= 1 << 3,							//!< Initially disabled
+		ThickFrame			= 1 << 5,							//!< Thick border
+		MinimizeBox			= 1 << 6,							//!< Minimize button (requires `SysMenu`)
+		MaximizeBox			= 1 << 7,							//!< Maximize button (requires `SysMenu`)
+		Resizable			= ThickFrame | 1 << 4,				//!< Resizable border (include `ThickFrame`)
+		Caption				= Border | ThickFrame | (1 << 8),	//!< Title bar (include `Border` + `ThickFrame`)
 
 		// Combined styles
-		Caption				= WS_CAPTION,				//!< Title bar (WS_BORDER + DialogFrame)
-		PopupWindow			= WS_POPUPWINDOW,			//!< Popup + Border + SysMenu
-		OverlappedWindow	= WS_OVERLAPPEDWINDOW,		//!< Common top-level window (Overlapped + Caption + SysMenu + ThickFrame + Min/Max boxes)
-
-		// Alias styles
-		Group				= WS_GROUP,					//!< Same as WS_MINIMIZEBOX. First control in a group (dialog navigation)
-		TabStop				= WS_TABSTOP,				//!< Same as WS_MAXIMIZEBOX. Control can be focused using Tab key
-		SizeBox				= WS_SIZEBOX,				//!< Same as WS_THICKFRAME
-		Tiled				= WS_TILED,					//!< Same as WS_OVERLAPPED
-		TiledWindow			= WS_TILEDWINDOW,			//!< Same as WS_OVERLAPPEDWINDOW
-		Resizable			= WS_SIZEBOX,				//!< Same as WS_SIZEBOX
+		PopupWindow			= Border | SysMenu,
+		OverlappedWindow	= Caption | Resizable | SysMenu | MaximizeBox | MinimizeBox,
 	};
 
 	//!	@brief	Enables bitwise operators (|, &, ~).
@@ -224,29 +205,19 @@ namespace easywin32
 	{
 		std::string result;
 
-		// Individual
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Popup);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Child);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Minimize);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Visible);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Disabled);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::ClipSiblings);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::ClipChildren);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Maximize);
 		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Border);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::DialogFrame);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::VScroll);
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::HScroll);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Visible);
 		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::SysMenu);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Caption);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Disabled);
+		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Resizable);
 		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::ThickFrame);
 		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::MinimizeBox);
 		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::MaximizeBox);
-		// Combined
-		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::Caption);
 		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::PopupWindow);
 		EZWIN32_CASE_APPEND_STR(result, styleFlags, Style::OverlappedWindow);
 
-		return result.empty() ?	"Style::Overlapped" : result;
+		return result.empty() ?	"Style::Empty" : result;
 	}
 
 	/*****************************************************************************
@@ -963,10 +934,8 @@ public:
 	 *				If the window is already open (m_hWnd is valid), this method does nothing. Stores the window handle and updates m_styleFlags and m_bounds.
 	 *	@param[in]	title - The title of the window.
 	 *	@param[in]	bounds - The rectangular area defining the window's position (left, top) and bounds (right, bottom) in screen coordinates.
-	 *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`, `Style::Popup`). Defaults to `Style::OverlappedWindow`.
+	 *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`). Defaults to `Style::OverlappedWindow`.
 	 *	@param[in]	exStyleFlags - The combination of extended window styles (e.g., ExStyle::Layered, ExStyle::TopMost). Defaults to 0 (no extended styles).
-	 *	@note		If `Style::Popup` is used, incompatible styles (e.g., Caption) are automatically removed to ensure compatibility.
-	 *	@note		For windows without `Style::Caption`, a custom border (8 pixels) is added for dragging, consistent with `WM_NCCALCSIZE` handling.
 	 */
 	void open(string_type title, Rect bounds, Flags<Style> styleFlags = Style::OverlappedWindow, Flags<ExStyle> exStyleFlags = 0);
 
@@ -989,10 +958,8 @@ public:
 	 *				If the window is already open (m_hWnd is valid), this method does nothing. Updates m_styleFlags and m_bounds accordingly.
 	 *	@param[in]	title - The title of the window.
 	 *	@param[in]	size - The size of the window (width and height in pixels) as a Size structure (cx, cy).
-	 *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`, `Style::Popup`). Defaults to `Style::OverlappedWindow`.
+	 *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`). Defaults to `Style::OverlappedWindow`.
 	 *	@param[in]	exStyleFlags - The combination of extended window styles (e.g., `ExStyle::Layered`, `ExStyle::TopMost`). Defaults to 0 (no extended styles).
-	 *	@note		If `Style::Popup` is specified, incompatible styles (e.g., `Style::Caption`) are automatically removed to ensure compatibility.
-	 *	@note		For windows without `Style::Popup` and `Style::Caption`, a custom border (8 pixels) is added for dragging, consistent with WM_NCCALCSIZE handling.
 	 *	@note		The window is created at default screen coordinates (CW_USEDEFAULT). Use setPos to specify a custom position.
 	 */
 	void open(string_type title, Size size, Flags<Style> styleFlags = Style::OverlappedWindow, Flags<ExStyle> exStyleFlags = 0);
@@ -1038,6 +1005,12 @@ public:
 	//!	@brief	Whether the windows is the foreground (active) window.
 	bool isForeground() const { return ::GetForegroundWindow() == m_hWnd; }
 
+	//!	@brief	Gets styles of the window.
+	Flags<Style> getStyle() const { return (DWORD)::GetWindowLongPtr(m_hWnd, GWL_STYLE); }
+
+	//!	@brief	Gets ex-styles of the window.
+	Flags<ExStyle> getExStyle() const { return (DWORD)::GetWindowLongPtr(m_hWnd, GWL_EXSTYLE); }
+
 	//!	@brief	Retrieves the position of the client area (left-top corner).
 	Point getClientPos() const { Point pt = {};		::ClientToScreen(m_hWnd, &pt);		return pt; }
 
@@ -1051,6 +1024,12 @@ public:
 
 	//!	@brief	Bring the window to front and set input focus.
 	void setFocus() { ::SetFocus(m_hWnd); }
+
+	//!	@brief	Rest style of the window.
+	void setStyle(Flags<Style> styleFlags);
+
+	//!	@brief	Rest ex-style of the window.
+	void setExStyle(Flags<ExStyle> styleFlags);
 
 	//!	@brief	Hide the window.
 	void hide() { ::ShowWindow(m_hWnd, SW_HIDE); }
@@ -1182,11 +1161,20 @@ public:
 
 private:
 
+	//!	@brief	Adjusts the window rectangle based on the specified styles.
+	template<bool SkipCaption> static void adjustWindowRect(Rect & rect, DWORD dwStyle, DWORD dwExStyle);
+
 	//!	@brief	Window procedure for message dispatching.
-	template<bool EraseTitleBar> static LRESULT procedure(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+	template<bool SkipCaption> static LRESULT procedure(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 	//!	@brief	Create window (internal).
-	template<bool EraseTitleBar> void internalOpen(string_type title, DWORD dwStyle, DWORD dwExStyle, int x, int y, int w, int h);
+	template<bool SkipCaption> void internalOpen(string_type title, DWORD dwStyle, DWORD dwExStyle, int x, int y, int w, int h);
+
+	//!	@brief	Determines whether the window should skip the caption area based on style flags.
+	static bool shouldSkipCaption(Flags<Style> styleFlags) { return !styleFlags.has(Style::Caption) && styleFlags.has(Style::ThickFrame); }
+
+	//!	@brief	Converts internal style flags to native Win32 style bits.
+	static DWORD toNativeStyle(Flags<Style> styleFlags);
 
 public:
 
@@ -1245,7 +1233,7 @@ private:
  *		- On `WM_DESTROY`, a quit message is posted to end the application loop.
  *		- For other messages, the stored Window pointer is used to dispatch events to registered callbacks (e.g., onClose, onResize, onMouseClick).
  */
-template<bool EraseTitleBar> LRESULT easywin32::Window::procedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+template<bool SkipCaption> LRESULT easywin32::Window::procedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Retrieve the stored Window* from the window's user data
 	auto window = reinterpret_cast<Window*>(::GetWindowLongPtr(hWnd, GWLP_USERDATA));
@@ -1258,28 +1246,30 @@ template<bool EraseTitleBar> LRESULT easywin32::Window::procedure(HWND hWnd, UIN
 	}
 	else if (uMsg == WM_NCCALCSIZE)
 	{
-		if constexpr (EraseTitleBar)
+		if constexpr (SkipCaption)
 		{
+			// When skipping the caption area, adjust the client region manually.
 			NCCALCSIZE_PARAMS * params = (NCCALCSIZE_PARAMS*)lParam;
 
-			constexpr int frameSize = 8;	//	win32 default size for drag
+			long top = params->rgrc[0].top;		// Backup original top value
+
+			// Let the default window proc calculate the base frame
+			LRESULT res = ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 
 			if (::IsZoomed(hWnd))
 			{
-				params->rgrc[0].top += frameSize;
-				params->rgrc[0].left += frameSize;
-				params->rgrc[0].right -= frameSize;
-				params->rgrc[0].bottom -= frameSize;
+				constexpr int frameSize = 8;		//	win32 default size for drag
+
+				// When maximized, keep a small draggable frame area at the top
+				params->rgrc[0].top = top + frameSize;
 			}
 			else
 			{
-				params->rgrc[0].top += 0;				//	skip title bar
-				params->rgrc[0].left += frameSize;
-				params->rgrc[0].right -= frameSize;
-				params->rgrc[0].bottom -= frameSize;
+				// Otherwise, keep the top edge unchanged to fully skip caption area
+				params->rgrc[0].top = top;
 			}
 
-			return 0;
+			return res;
 		}
 	}
 	else if (uMsg == WM_DESTROY)	// Handle window destruction
@@ -1412,8 +1402,7 @@ template<bool EraseTitleBar> LRESULT easywin32::Window::procedure(HWND hWnd, UIN
  *				to handle message dispatching. The window class is registered once per application lifetime and
  *				unregistered upon destruction. Stores the window handle in m_hWnd and associates this Window instance
  *				with the native handle for message processing.
- *	@tparam		EraseTitleBar - If true, registers a window class without a title bar ("EasyWin32-NoTitleBar"),
- *				used for windows without `Style::Caption` or `Style::Popup`. If false, uses the standard "EasyWin32" class.
+ *	@tparam		SkipCaption - If true, registers a window class without a title bar.
  *	@param[in]	title - The window title text, displayed in the title bar (if applicable).
  *	@param[in]	dwStyle - The native window style flags (e.g., WS_OVERLAPPEDWINDOW, WS_POPUP).
  *	@param[in]	dwExStyle - The native extended window style flags (e.g., WS_EX_LAYERED, WS_EX_TOPMOST).
@@ -1424,7 +1413,7 @@ template<bool EraseTitleBar> LRESULT easywin32::Window::procedure(HWND hWnd, UIN
  *	@note		The window class is registered only once per application, ensuring efficient resource usage.
  *	@note		If the window class registration fails, an assertion is triggered.
  */
-template<bool EraseTitleBar> void easywin32::Window::internalOpen(string_type title, DWORD dwStyle, DWORD dwExStyle, int x, int y, int w, int h)
+template<bool SkipCaption> void easywin32::Window::internalOpen(string_type title, DWORD dwStyle, DWORD dwExStyle, int x, int y, int w, int h)
 {
 	/**
 	 *	@brief	Static window class wrapper for Win32 window registration.
@@ -1442,7 +1431,7 @@ template<bool EraseTitleBar> void easywin32::Window::internalOpen(string_type ti
 		{
 			cbSize			= sizeof(WNDCLASSEXW);
 			style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-			lpfnWndProc		= Window::procedure<EraseTitleBar>;
+			lpfnWndProc		= Window::procedure<SkipCaption>;
 			cbClsExtra		= 0;
 			cbWndExtra		= 0;
 			hInstance		= ::GetModuleHandle(NULL);
@@ -1452,9 +1441,9 @@ template<bool EraseTitleBar> void easywin32::Window::internalOpen(string_type ti
 			lpszMenuName	= NULL;
 			hIconSm			= ::LoadIcon(NULL, IDI_WINLOGO);
 		#ifdef UNICODE
-			lpszClassName	= EraseTitleBar ? L"EasyWin32-NoTitleBar" : L"EasyWin32";
+			lpszClassName	= SkipCaption ? L"EasyWin32-SkipCaption" : L"EasyWin32";
 		#else
-			lpszClassName	= EraseTitleBar ? "EasyWin32-NoTitleBar" : "EasyWin32";
+			lpszClassName	= SkipCaption ? "EasyWin32-SkipCaption" : "EasyWin32";
 		#endif
 			isRegistered	= ::RegisterClassEx(this);
 		}
@@ -1486,38 +1475,27 @@ template<bool EraseTitleBar> void easywin32::Window::internalOpen(string_type ti
  *				If the window is already open (m_hWnd is valid), this method does nothing. Stores the window handle and updates m_styleFlags and m_bounds.
  *	@param[in]	title - The title of the window.
  *	@param[in]	bounds - The rectangular area defining the window's position (left, top) and bounds (right, bottom) in screen coordinates.
- *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`, `Style::Popup`). Defaults to `Style::OverlappedWindow`.
+ *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`). Defaults to `Style::OverlappedWindow`.
  *	@param[in]	exStyleFlags - The combination of extended window styles (e.g., ExStyle::Layered, ExStyle::TopMost). Defaults to 0 (no extended styles).
- *	@note		If `Style::Popup` is used, incompatible styles (e.g., Caption) are automatically removed to ensure compatibility.
- *	@note		For windows without `Style::Caption`, a custom border (8 pixels) is added for dragging, consistent with `WM_NCCALCSIZE` handling.
  */
 void easywin32::Window::open(string_type title, Rect bounds, Flags<Style> styleFlags, Flags<ExStyle> exStyleFlags)
 {
-	if (::IsWindow(m_hWnd) != 0)
-		return;
+	if (::IsWindow(m_hWnd) != 0)	return;
 
-	// Handle Popup style conflicts
-	if (styleFlags.has(Style::Popup))
-		styleFlags &= ~Style::Caption;
+	DWORD dwStyle = Window::toNativeStyle(styleFlags);
 
-	// Should manually erase title bar or not?
-	if (!styleFlags.has(Style::Popup) && !styleFlags.has(Style::Caption))
+	if (Window::shouldSkipCaption(styleFlags))
 	{
-		constexpr int frameSize = 8;
-		bounds.bottom += frameSize;
-		bounds.right += frameSize;
-		bounds.left -= frameSize;
+		Window::adjustWindowRect<true>(bounds, dwStyle, exStyleFlags);
 
-		// Adjust bounds for windows without Popup or Caption (custom border for dragging)
-		this->internalOpen<true>(title, styleFlags, exStyleFlags, bounds.left, bounds.top,
+		this->internalOpen<true>(title, dwStyle, exStyleFlags, bounds.left, bounds.top,
 								 bounds.right - bounds.left, bounds.bottom - bounds.top);
 	}
 	else
 	{
-		// Adjust bounds for standard non-client areas (e.g., title bar, borders)
-		::AdjustWindowRectEx(&bounds, styleFlags, FALSE, exStyleFlags);
+		Window::adjustWindowRect<false>(bounds, dwStyle, exStyleFlags);
 
-		this->internalOpen<false>(title, styleFlags, exStyleFlags, bounds.left, bounds.top,
+		this->internalOpen<false>(title, dwStyle, exStyleFlags, bounds.left, bounds.top,
 								  bounds.right - bounds.left, bounds.bottom - bounds.top);
 	}
 }
@@ -1531,43 +1509,119 @@ void easywin32::Window::open(string_type title, Rect bounds, Flags<Style> styleF
  *				If the window is already open (m_hWnd is valid), this method does nothing. Updates m_styleFlags and m_bounds accordingly.
  *	@param[in]	title - The title of the window.
  *	@param[in]	size - The size of the window (width and height in pixels) as a Size structure (cx, cy).
- *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`, `Style::Popup`). Defaults to `Style::OverlappedWindow`.
+ *	@param[in]	styleFlags - The combination of window styles (e.g., `Style::OverlappedWindow`). Defaults to `Style::OverlappedWindow`.
  *	@param[in]	exStyleFlags - The combination of extended window styles (e.g., `ExStyle::Layered`, `ExStyle::TopMost`). Defaults to 0 (no extended styles).
- *	@note		If `Style::Popup` is specified, incompatible styles (e.g., `Style::Caption`) are automatically removed to ensure compatibility.
- *	@note		For windows without `Style::Popup` and `Style::Caption`, a custom border (8 pixels) is added for dragging, consistent with WM_NCCALCSIZE handling.
  *	@note		The window is created at default screen coordinates (CW_USEDEFAULT). Use setPos to specify a custom position.
  */
 void easywin32::Window::open(string_type title, Size size, Flags<Style> styleFlags, Flags<ExStyle> exStyleFlags)
 {
-	if (::IsWindow(m_hWnd) != 0)
-		return;
+	if (::IsWindow(m_hWnd) != 0)	return;
 
-	// Handle Popup style conflicts
-	if (styleFlags.has(Style::Popup))
-		styleFlags &= ~Style::Caption;
-		
 	RECT bounds = { 0, 0, size.cx, size.cy };
 
-	// Should manually erase title bar or not?
-	if (!styleFlags.has(Style::Popup) && !styleFlags.has(Style::Caption))
-	{
-		constexpr int frameSize = 8;
-		bounds.bottom += frameSize;
-		bounds.right += frameSize;
-		bounds.left -= frameSize;
+	DWORD dwStyle = Window::toNativeStyle(styleFlags);
 
-		// Adjust bounds for windows without Popup or Caption (custom border for dragging)
-		this->internalOpen<true>(title, styleFlags, exStyleFlags, CW_USEDEFAULT, CW_USEDEFAULT,
+	if (Window::shouldSkipCaption(styleFlags))
+	{
+		Window::adjustWindowRect<true>(bounds, dwStyle, exStyleFlags);
+
+		this->internalOpen<true>(title, dwStyle, exStyleFlags, CW_USEDEFAULT, CW_USEDEFAULT,
 								 bounds.right - bounds.left, bounds.bottom - bounds.top);
 	}
 	else
 	{
-		// Adjust bounds for standard non-client areas (e.g., title bar, borders)
-		::AdjustWindowRectEx(&bounds, styleFlags, FALSE, exStyleFlags);
+		Window::adjustWindowRect<false>(bounds, dwStyle, exStyleFlags);
 
-		this->internalOpen<false>(title, styleFlags, exStyleFlags, CW_USEDEFAULT, CW_USEDEFAULT,
+		this->internalOpen<false>(title, dwStyle, exStyleFlags, CW_USEDEFAULT, CW_USEDEFAULT,
 								  bounds.right - bounds.left, bounds.bottom - bounds.top);
 	}
+}
+
+
+//! @brief	Adjust the given client rectangle based on window styles and extended styles.
+template<bool SkipCaption> void easywin32::Window::adjustWindowRect(Rect & rect, DWORD dwStyle, DWORD dwExStyle)
+{
+	auto top = rect.top;
+
+	::AdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle);
+
+	if constexpr (SkipCaption)
+	{
+		rect.top = top;		// Preserve top edge to skip caption adjustment
+	}
+}
+
+
+//! @brief	Convert easywin32 style flags to native Win32 window style bits.
+DWORD easywin32::Window::toNativeStyle(Flags<Style> styleFlags)
+{
+	DWORD dwStyle = WS_POPUP;	// Base style (Win32 auto-adds WS_CAPTION if not using WS_POPUP)
+	
+	if (styleFlags.has(Style::Border))
+		dwStyle |= WS_BORDER;
+
+	if (styleFlags.has(Style::Visible))
+		dwStyle |= WS_VISIBLE;
+
+	if (styleFlags.has(Style::SysMenu))
+		dwStyle |= WS_SYSMENU;
+
+	if (styleFlags.has(Style::Disabled))
+		dwStyle |= WS_DISABLED;
+
+	if (styleFlags.has(Style::Resizable))
+		dwStyle |= WS_THICKFRAME;
+
+	if (styleFlags.has(Style::MinimizeBox))
+		dwStyle |= WS_MINIMIZEBOX;
+
+	if (styleFlags.has(Style::MaximizeBox))
+		dwStyle |= WS_MAXIMIZEBOX;
+
+	// Add caption if explicitly requested or when thick frame is used (required by Win32 for proper window behavior)
+	if (styleFlags.has(Style::Caption) || styleFlags.has(Style::ThickFrame))
+		dwStyle |= WS_CAPTION;
+
+	return dwStyle;
+}
+
+
+//!	@brief	Rest style of the window.
+void easywin32::Window::setStyle(Flags<Style> styleFlags)
+{
+	auto pos = this->getClientPos();
+
+	auto extent = this->getClientExtent();
+
+	DWORD dwStyle = Window::toNativeStyle(styleFlags);
+
+	Rect rect = { pos.x, pos.y, pos.x + extent.cx, pos.y + extent.cy };
+
+	::SetWindowLongPtr(m_hWnd, GWL_STYLE, static_cast<LONG_PTR>(dwStyle));
+
+	if (Window::shouldSkipCaption(styleFlags))
+	{
+		Window::adjustWindowRect<true>(rect, dwStyle, (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+
+		::SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)Window::procedure<true>);
+	}
+	else
+	{
+		Window::adjustWindowRect<false>(rect, dwStyle, (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+
+		::SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)Window::procedure<false>);
+	}
+
+	::SetWindowPos(m_hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED | SWP_NOZORDER);
+}
+
+
+//!	@brief	Rest ex-style of the window.
+void easywin32::Window::setExStyle(Flags<ExStyle> styleFlags)
+{
+	::SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, static_cast<LONG_PTR>(styleFlags.mask));
+
+	::SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE);
 }
 
 
