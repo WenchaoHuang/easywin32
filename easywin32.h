@@ -78,47 +78,39 @@ namespace easywin32
 
 		using Type = std::underlying_type_t<EnumType>;
 
-		Type	flags;
+		Type	mask;
 
 		// Constructors
-		constexpr Flags() noexcept : flags(0) {}
-		constexpr Flags(Type value) noexcept : flags(value) {}
-		constexpr Flags(EnumType value) noexcept : flags(static_cast<Type>(value)) {}
+		constexpr Flags() noexcept : mask(0) {}
+		constexpr Flags(Type value) noexcept : mask(value) {}
+		constexpr Flags(EnumType value) noexcept : mask(static_cast<Type>(value)) {}
 
 		// Bitwise OR
-		constexpr Flags operator|(Flags rhs) const noexcept { return Flags(flags | rhs.flags); }
-		constexpr Flags operator|(EnumType rhs) const noexcept { return Flags(flags | static_cast<Type>(rhs)); }
-		constexpr Flags & operator|=(EnumType rhs) noexcept { flags |= static_cast<Type>(rhs); return *this; }
-		constexpr Flags & operator|=(Flags rhs) noexcept { flags |= rhs.flags; return *this; }
+		constexpr Flags operator|(Flags rhs) const noexcept { return Flags(mask | rhs.mask); }
+		constexpr Flags operator|(EnumType rhs) const noexcept { return Flags(mask | static_cast<Type>(rhs)); }
+		constexpr Flags & operator|=(EnumType rhs) noexcept { mask |= static_cast<Type>(rhs); return *this; }
+		constexpr Flags & operator|=(Flags rhs) noexcept { mask |= rhs.mask; return *this; }
 
 		// Bitwise AND
-		constexpr Flags operator&(Flags rhs) const noexcept { return Flags(flags & rhs.flags); }
-		constexpr Flags operator&(EnumType rhs) const noexcept { return Flags(flags & static_cast<Type>(rhs)); }
-		constexpr Flags & operator&=(EnumType rhs) noexcept { flags &= static_cast<Type>(rhs); return *this; }
-		constexpr Flags & operator&=(Flags rhs) noexcept { flags &= rhs.flags; return *this; }
+		constexpr Flags operator&(Flags rhs) const noexcept { return Flags(mask & rhs.mask); }
+		constexpr Flags operator&(EnumType rhs) const noexcept { return Flags(mask & static_cast<Type>(rhs)); }
+		constexpr Flags & operator&=(EnumType rhs) noexcept { mask &= static_cast<Type>(rhs); return *this; }
+		constexpr Flags & operator&=(Flags rhs) noexcept { mask &= rhs.mask; return *this; }
 
 		// Bitwise XOR
-		constexpr Flags operator^(Flags rhs) const noexcept { return Flags(flags ^ rhs.flags); }
-		constexpr Flags & operator^=(Flags rhs) noexcept { flags ^= rhs.flags; return *this; }
+		constexpr Flags operator^(Flags rhs) const noexcept { return Flags(mask ^ rhs.mask); }
+		constexpr Flags & operator^=(Flags rhs) noexcept { mask ^= rhs.mask; return *this; }
 
 		// Bitwise NOT
-		constexpr Flags operator~() const noexcept { return Flags(~flags); }
-
-		// Comparison
-		constexpr bool operator==(Flags rhs) const noexcept { return flags == rhs.flags; }
-		constexpr bool operator!=(Flags rhs) const noexcept { return flags != rhs.flags; }
+		constexpr Flags operator~() const noexcept { return Flags(~mask); }
 
 		// Conversion
-		constexpr operator bool() const noexcept { return flags != 0; }
-		constexpr operator Type() const noexcept { return flags; }
+		constexpr operator Type() const noexcept { return mask; }
 
 		// Test
-		constexpr bool has(EnumType bit) const noexcept { return (flags & static_cast<Type>(bit)) != 0; }
-		constexpr bool none() const noexcept { return flags == 0; }
-		constexpr bool any() const noexcept { return flags != 0; }
-
-		// Clear
-		constexpr void clear() noexcept { flags = 0; }
+		constexpr bool has(Flags flags) const noexcept { return flags ? (flags.mask & mask) == flags.mask : !flags; }
+		constexpr bool none() const noexcept { return mask == 0; }
+		constexpr bool any() const noexcept { return mask != 0; }
 	};
 
 	/*****************************************************************************

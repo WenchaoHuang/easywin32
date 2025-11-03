@@ -54,7 +54,7 @@ void flagsTest()
 	assert(inverted.has(EzMouseState::Right));
 	assert(!inverted.none());
 
-	stateFlags.clear();
+	stateFlags = 0;
 	assert(stateFlags.none());
 	assert(!stateFlags.any());
 
