@@ -186,14 +186,15 @@ namespace easywin32
 		ClipSiblings		= WS_CLIPSIBLINGS,			//!< Clips child windows relative to each other
 		ClipChildren		= WS_CLIPCHILDREN,			//!< Excludes child areas when drawing parent
 		Maximize			= WS_MAXIMIZE,				//!< Initially maximized
-		Border				= WS_BORDER,				//!< Thin border
-		DialogFrame			= WS_DLGFRAME,				//!< Dialog-style border (cannot have title bar)
-		VScroll				= WS_VSCROLL,				//!< Vertical scroll bar
-		HScroll				= WS_HSCROLL,				//!< Horizontal scroll bar
 		SysMenu				= WS_SYSMENU,				//!< System menu (requires Caption)
 		ThickFrame			= WS_THICKFRAME,			//!< Resizable border (size box)
 		MinimizeBox			= WS_MINIMIZEBOX,			//!< Minimize button (requires SysMenu)
 		MaximizeBox			= WS_MAXIMIZEBOX,			//!< Maximize button (requires SysMenu)
+		// Deprecated (ugly)
+		Border				= WS_BORDER,				//!< Thin border
+		DialogFrame			= WS_DLGFRAME,				//!< Dialog-style border (cannot have title bar)
+		HScroll				= WS_HSCROLL,				//!< Horizontal scroll bar
+		VScroll				= WS_VSCROLL,				//!< Vertical scroll bar
 
 		// Combined styles
 		Caption				= WS_CAPTION,				//!< Title bar (WS_BORDER + DialogFrame)
@@ -255,15 +256,12 @@ namespace easywin32
 		// Individual styles
 		AcceptFiles				= WS_EX_ACCEPTFILES,			//!< Accepts drag-drop files.
 		AppWindow				= WS_EX_APPWINDOW,				//!< Forces top-level window onto taskbar when visible.
-		ClientEdge				= WS_EX_CLIENTEDGE,				//!< Border with sunken edge.
 		Composited				= WS_EX_COMPOSITED,				//!< Paints descendants bottom-to-top with double-buffering.
 		ContextHelp				= WS_EX_CONTEXTHELP,			//!< Title bar question mark for help.
 		ControlParent			= WS_EX_CONTROLPARENT,			//!< Enables dialog navigation for child windows.
-		DlgModalFrame			= WS_EX_DLGMODALFRAME,			//!< Double border, optional title bar with WS_CAPTION.
 		Layered					= WS_EX_LAYERED,				//!< Layered window, supports top-level and child windows (Windows 8+).
 		LayoutRtl				= WS_EX_LAYOUTRTL,				//!< Right-edge origin for right-to-left languages.
 		Left					= WS_EX_LEFT,					//!< Generic left-aligned properties (default).
-		LeftScrollBar			= WS_EX_LEFTSCROLLBAR,			//!< Left-side scroll bar for right-to-left languages.
 		LtrReading				= WS_EX_LTRREADING,				//!< Left-to-right text reading order (default).
 		MDIChild				= WS_EX_MDICHILD,				//!< MDI child window.
 		NoActivate				= WS_EX_NOACTIVATE,				//!< Non-foreground window, not on taskbar by default.
@@ -271,14 +269,18 @@ namespace easywin32
 		NoParentNotify			= WS_EX_NOPARENTNOTIFY,			//!< No WM_PARENTNOTIFY for child creation/destruction.
 		NoRedirectionBitmap		= WS_EX_NOREDIRECTIONBITMAP,	//!< No redirection surface rendering.
 		Right					= WS_EX_RIGHT,					//!< Right-aligned properties for right-to-left languages.
-		RightScrollBar			= WS_EX_RIGHTSCROLLBAR,			//!< Right-side scroll bar (default).
 		RtlReading				= WS_EX_RTLREADING,				//!< Right-to-left text reading order for supported languages.
-		StaticEdge				= WS_EX_STATICEDGE,				//!< 3D border for non-interactive items.
 		ToolWindow				= WS_EX_TOOLWINDOW,				//!< Floating toolbar, no taskbar/ALT+TAB.
 		TopMost					= WS_EX_TOPMOST,				//!< Stays above non-topmost windows.
 		Transparent				= WS_EX_TRANSPARENT,			//!< Delays painting until siblings are painted.
+		// Deprecated (ugly)
+		StaticEdge				= WS_EX_STATICEDGE,				//!< 3D border for non-interactive items.
 		WindowEdge				= WS_EX_WINDOWEDGE,				//!< Border with raised edge.
-
+		ClientEdge				= WS_EX_CLIENTEDGE,				//!< Border with sunken edge.
+		DlgModalFrame			= WS_EX_DLGMODALFRAME,			//!< Double border, optional title bar with WS_CAPTION.
+		LeftScrollBar			= WS_EX_LEFTSCROLLBAR,			//!< Left-side scroll bar for right-to-left languages.
+		RightScrollBar			= WS_EX_RIGHTSCROLLBAR,			//!< Right-side scroll bar (default).
+		
 		// Combined styles
 		OverlappedWindow		= WS_EX_OVERLAPPEDWINDOW,		//!< Overlapped window (WINDOWEDGE | CLIENTEDGE).
 		PaletteWindow			= WS_EX_PALETTEWINDOW,			//!< Palette window (WINDOWEDGE | TOOLWINDOW | TOPMOST).
