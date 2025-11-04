@@ -60,11 +60,17 @@ namespace easywin32
 	*****************************************************************************/
 
 	//!	@brief	Represents an RGB color with 8-bit channels.
-	struct Color
+	struct ColorRGB
 	{
-		uint8_t	r;	//!< Red channel component (0–255)
-		uint8_t g;	//!< Green channel component (0–255)
-		uint8_t b;	//!< Blue channel component (0–255)
+		uint8_t		r;	//!< Red channel component (0–255)
+		uint8_t		g;	//!< Green channel component (0–255)
+		uint8_t		b;	//!< Blue channel component (0–255)
+	};
+
+	//!	@brief	Represents an RGBA color with 8-bit channels.
+	struct ColorRGBA : public ColorRGB
+	{
+		uint8_t		a;	//!< Alpha channel component (0–255)
 	};
 
 	/*****************************************************************************
@@ -907,13 +913,14 @@ using EzByte = easywin32::Byte;
 using EzSize = easywin32::Size;
 using EzRect = easywin32::Rect;
 using EzPoint = easywin32::Point;
-using EzColor = easywin32::Color;
 using EzStyle = easywin32::Style;
 using EzResult = easywin32::Result;
 using EzWindow = easywin32::Window;
 using EzCursor = easywin32::Cursor;
 using EzExStyle = easywin32::ExStyle;
 using EzBackdrop = easywin32::Backdrop;
+using EzColorRGB = easywin32::ColorRGB;
+using EzColorRGBA = easywin32::ColorRGBA;
 using EzKeyAction = easywin32::KeyAction;
 using EzMouseState = easywin32::MouseState;
 using EzMouseAction = easywin32::MouseAction;
@@ -1088,7 +1095,7 @@ public:
 	Point clientToScreen(Point pt) const { ::ClientToScreen(m_hWnd, &pt);	return pt; }
 
 	//!	@brief	Draws a raw RGB bitmap onto the window at the specified position.
-	void drawBitmap(const Color * pixels, int width, int height, int dstX = 0, int dstY = 0);
+	void drawBitmap(const ColorRGB * pixels, int width, int height, int dstX = 0, int dstY = 0);
 
 	//!	@brief	Sets the window opacity (0-255, requires ExStyle::Layered).
 	void setOpacity(Byte alpha) { ::SetLayeredWindowAttributes(m_hWnd, 0, alpha, LWA_ALPHA); }
@@ -1135,11 +1142,11 @@ public:
 	void setNonClientRenderingPolicy(NonClientRenderingPolicy policy) { ::DwmSetWindowAttribute(m_hWnd, DWMWA_NCRENDERING_POLICY, &policy, sizeof(policy)); }
 	
 	//!	@brief	Set color of caption/text/border (requires Windows11)
-	void setCaptionColor(Color color) { COLORREF val = RGB(color.r, color.g, color.b);	::DwmSetWindowAttribute(m_hWnd, DWMWA_CAPTION_COLOR, &val, sizeof(val)); }
-	void setBorderColor(Color color) { COLORREF val = RGB(color.r, color.g, color.b);	::DwmSetWindowAttribute(m_hWnd, DWMWA_BORDER_COLOR, &val, sizeof(val)); }
-	void setTextColor(Color color) { COLORREF val = RGB(color.r, color.g, color.b);		::DwmSetWindowAttribute(m_hWnd, DWMWA_TEXT_COLOR, &val, sizeof(val)); }
+	void setCaptionColor(ColorRGB color) { COLORREF val = RGB(color.r, color.g, color.b);	::DwmSetWindowAttribute(m_hWnd, DWMWA_CAPTION_COLOR, &val, sizeof(val)); }
+	void setBorderColor(ColorRGB color) { COLORREF val = RGB(color.r, color.g, color.b);	::DwmSetWindowAttribute(m_hWnd, DWMWA_BORDER_COLOR, &val, sizeof(val)); }
+	void setTextColor(ColorRGB color) { COLORREF val = RGB(color.r, color.g, color.b);		::DwmSetWindowAttribute(m_hWnd, DWMWA_TEXT_COLOR, &val, sizeof(val)); }
 
-	//! @brief	Allows the window to either use the accent color, or dark, according to the user Color Mode preferences.
+	//! @brief	Allows the window to either use the accent color, or dark, according to the user ColorRGB Mode preferences.
 	void enableImmersiveDarkMode(bool enable) { BOOL val = enable; ::DwmSetWindowAttribute(m_hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &val, sizeof(val)); }
 
 	//!	@brief	Set corner style of the window (requires Windows11)
@@ -1572,7 +1579,7 @@ void easywin32::Window::open(string_type title, Size size, Flags<Style> styleFla
  *	@warning	This function must be called only inside `onPaint`, because it uses BeginPaint/EndPaint.
  *				Calling it outside `onPaint` causes undefined behavior in Win32.
  */
-void easywin32::Window::drawBitmap(const Color * pixels, int width, int height, int dstX, int dstY)
+void easywin32::Window::drawBitmap(const ColorRGB * pixels, int width, int height, int dstX, int dstY)
 {
 	PAINTSTRUCT ps = {};
 	BITMAPINFO bmi = {};
@@ -1580,7 +1587,7 @@ void easywin32::Window::drawBitmap(const Color * pixels, int width, int height, 
 	bmi.bmiHeader.biWidth			= width;
 	bmi.bmiHeader.biHeight			= -height;				// Negative = top-down bitmap
 	bmi.bmiHeader.biPlanes			= 1;
-	bmi.bmiHeader.biBitCount		= sizeof(Color) * 8;	// 24-bit (RGB)
+	bmi.bmiHeader.biBitCount		= sizeof(ColorRGB) * 8;	// 24-bit (RGB)
 	bmi.bmiHeader.biCompression		= BI_RGB;				// No compression
 
 	// Begin painting

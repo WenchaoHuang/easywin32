@@ -43,7 +43,7 @@ Complex complex_sqr(Complex z)
 }
 
 
-void paint_kernel(EzColor * pixels, int width, float invN, float t, int num)
+void paint_kernel(EzColorRGB * pixels, int width, float invN, float t, int num)
 {
 #pragma omp parallel for
 	for (int tid = 0; tid < num; tid++)
@@ -70,7 +70,7 @@ void paint_kernel(EzColor * pixels, int width, float invN, float t, int num)
 		float value = 1.0f - iterations * 0.02f;
 		unsigned char color255 = static_cast<unsigned char>(value * 255);
 
-		pixels[tid] = EzColor{ color255, color255, color255 };
+		pixels[tid] = EzColorRGB{ color255, color255, color255 };
 	}
 }
 
@@ -81,7 +81,7 @@ int main()
 	const int width = n * 2;
 	const int height = n;
 	const size_t num_pixels = width * height;
-	std::vector<EzColor>	pixels(num_pixels);
+	std::vector<EzColorRGB>		pixels(num_pixels);
 
 	EzWindow window;
 	window.open("Julia Set", EzSize{ width, height });

@@ -39,7 +39,7 @@ int main()
 	window.open("EasyWin32-Test", EzRect{ 100, 100, 900, 700 }, EzStyle::OverlappedWindow, EzExStyle::AcceptFiles);
 	window.show();
 
-	std::vector<EzColor> image(1920 * 1080, EzColor{ 100, 200, 255 });
+	std::vector<EzColorRGB> image(1920 * 1080, EzColorRGB{ 100, 200, 255 });
 
 	//	Draw background
 	window.onPaint = [&]()
