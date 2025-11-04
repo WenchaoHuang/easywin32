@@ -1097,9 +1097,6 @@ public:
 	//!	@brief	Draws a raw RGB bitmap onto the window at the specified position.
 	void drawBitmap(const ColorRGB * pixels, int width, int height, int dstX = 0, int dstY = 0);
 
-	//!	@brief	Sets the window opacity (0-255, requires ExStyle::Layered).
-	void setOpacity(Byte alpha) { ::SetLayeredWindowAttributes(m_hWnd, 0, alpha, LWA_ALPHA); }
-
 	//!	@brief	Creates a timer with the specified id and time-out value.
 	void setTimer(UINT_PTR id, unsigned int millisecond) { ::SetTimer(m_hWnd, id, millisecond, NULL); }
 
@@ -1136,7 +1133,16 @@ public:
 	#endif
 	}
 
-public:
+public:	// Layered window section
+
+	//!	@brief	Sets the window opacity (0-255, requires ExStyle::Layered).
+	void setOpacity(Byte alpha) { ::SetLayeredWindowAttributes(m_hWnd, 0, alpha, LWA_ALPHA); }
+
+	//!	@brief		Sets a color key for the layered window to enable per-pixel transparency (requires ExStyle::Layered).
+	//! @details	All pixels exactly matching the given color will be rendered as transparent, allowing content behind the window to show through.
+	void setColorKey(ColorRGB color) { ::SetLayeredWindowAttributes(m_hWnd, RGB(color.r, color.g, color.b), 0, LWA_COLORKEY); }
+
+public: // DWM section
 	
 	//!	@brief	Set non-client rendering policy.
 	void setNonClientRenderingPolicy(NonClientRenderingPolicy policy) { ::DwmSetWindowAttribute(m_hWnd, DWMWA_NCRENDERING_POLICY, &policy, sizeof(policy)); }
