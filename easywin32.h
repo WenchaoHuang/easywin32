@@ -1189,12 +1189,11 @@ public:
 	std::function<Result(HWND, UINT, WPARAM, LPARAM)>						forwardMessage;		// Called before default message handling.
 	std::function<Result(wchar_t)>											onInputCharacter;	// Called when a character input (WM_CHAR, WM_SYSCHAR, WM_UNICHAR) is received.
 	std::function<Result(const std::vector<string_type>&)>					onDropFiles;		// Called when files are dropped onto the window (WM_DROPFILES), requires ExStyle::AcceptFiles.
-	std::function<Result()>													onKillFocus;		// Called when the window loses focus (WM_KILLFOCUS).
-	std::function<Result()>													onSetFocus;			// Called when the window gains focus (WM_SETFOCUS).
 	std::function<Result()>													onEnterMove;		// Called when the user starts moving or resizing the window(WM_ENTERSIZEMOVE).
 	std::function<Result()>													onExitMove;			// Called when the user finishes moving or resizing the window (WM_EXITSIZEMOVE).
 	std::function<Result()>													onPaint;			// Called when the window needs to be repainted (WM_PAINT).
 	std::function<Result(UINT_PTR id)>										onTimer;			// Called when a timer event occurs (WM_TIMER).
+	std::function<Result(bool focused)>										onFocus;			// Called when the window gains or lost focus (WM_SETFOCUS, WM_KILLFOCUS).
 	std::function<Result()>													onClose;			// Called when the window is about to close (WM_CLOSE).
 	std::function<Result()>													onMouseLeave;		// Called when the mouse leave the client area (WM_MOUSELEAVE).
 	std::function<Result(int x, int y)>										onMove;				// Called when the window is moved (WM_MOVE).
@@ -1297,8 +1296,8 @@ template<bool SkipCaption> LRESULT easywin32::Window::procedure(HWND hWnd, UINT 
 			case WM_CLOSE:			if (window->onClose)			result = window->onClose();			break;
 			case WM_PAINT:			if (window->onPaint)			result = window->onPaint();			break;
 			case WM_TIMER:			if (window->onTimer)			result = window->onTimer(wParam);	break;
-			case WM_SETFOCUS:		if (window->onSetFocus)			result = window->onSetFocus();		break;
-			case WM_KILLFOCUS:		if (window->onKillFocus)		result = window->onKillFocus();		break;
+			case WM_SETFOCUS:		if (window->onFocus)			result = window->onFocus(true);		break;
+			case WM_KILLFOCUS:		if (window->onFocus)			result = window->onFocus(false);	break;
 			case WM_MOUSELEAVE:		if (window->onMouseLeave)		result = window->onMouseLeave();	break;
 			case WM_EXITSIZEMOVE:	if (window->onExitMove)			result = window->onExitMove();		break;
 			case WM_ENTERSIZEMOVE:	if (window->onEnterMove)		result = window->onEnterMove();		break;
