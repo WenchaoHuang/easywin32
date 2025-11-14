@@ -30,7 +30,7 @@ find_package(OpenMP REQUIRED)
 add_executable(${TARGET_NAME} main.cpp)
 
 # Link directories
-target_link_libraries(${TARGET_NAME} PRIVATE EasyWin32 OpenMP::OpenMP_CXX)
+target_link_libraries(${TARGET_NAME} PRIVATE easywin32 OpenMP::OpenMP_CXX)
 
 # CMake properties
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Examples")

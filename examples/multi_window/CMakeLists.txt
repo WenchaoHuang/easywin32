@@ -27,7 +27,7 @@ set(TARGET_NAME multi_window)
 add_executable(${TARGET_NAME} main.cpp)
 
 # Link directories
-target_link_libraries(${TARGET_NAME} PRIVATE EasyWin32)
+target_link_libraries(${TARGET_NAME} PRIVATE easywin32)
 
 # CMake properties
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Examples")

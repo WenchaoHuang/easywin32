@@ -21,7 +21,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Target name
-set(TARGET_NAME EasyWin32-Tests)
+set(TARGET_NAME easywin32-tests)
 
 # Source files
 file(GLOB EZWIN32_TEST_SOURCES CONFIGURE_DEPENDS
@@ -32,7 +32,7 @@ file(GLOB EZWIN32_TEST_SOURCES CONFIGURE_DEPENDS
 add_executable(${TARGET_NAME} ${EZWIN32_TEST_SOURCES})
 
 # Link libraries
-target_link_libraries(${TARGET_NAME} PRIVATE EasyWin32)
+target_link_libraries(${TARGET_NAME} PRIVATE easywin32)
 
 # MSVC settings
 if(MSVC)

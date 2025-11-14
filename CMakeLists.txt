@@ -21,7 +21,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Target name
-set(TARGET_NAME EasyWin32)
+set(TARGET_NAME easywin32)
 
 # Project name
 project(${TARGET_NAME} LANGUAGES CXX)
