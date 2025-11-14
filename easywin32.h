@@ -984,6 +984,9 @@ public:
 
 public:
 
+	//!	@brief	Gets style flags of the window.
+	Flags<Style> getStyleFlags() const;
+
 	//!	@brief	Returns the native handle of the win32 window.
 	HWND nativeHandle() { return m_hWnd; }
 
@@ -1005,11 +1008,8 @@ public:
 	//!	@brief	Whether the windows is the foreground (active) window.
 	bool isForeground() const { return ::GetForegroundWindow() == m_hWnd; }
 
-	//!	@brief	Gets styles of the window.
-	Flags<Style> getStyle() const { return (DWORD)::GetWindowLongPtr(m_hWnd, GWL_STYLE); }
-
-	//!	@brief	Gets ex-styles of the window.
-	Flags<ExStyle> getExStyle() const { return (DWORD)::GetWindowLongPtr(m_hWnd, GWL_EXSTYLE); }
+	//!	@brief	Gets ex-style flags of the window.
+	Flags<ExStyle> getExStyleFlags() const { return (DWORD)::GetWindowLongPtr(m_hWnd, GWL_EXSTYLE); }
 
 	//!	@brief	Retrieves the position of the client area (left-top corner).
 	Point getClientPos() const { Point pt = {};		::ClientToScreen(m_hWnd, &pt);		return pt; }
@@ -1207,6 +1207,7 @@ public:
 private:
 
 	HWND		m_hWnd = nullptr;
+	bool		m_skipCaption = false;
 };
 
 /*********************************************************************************
@@ -1485,6 +1486,8 @@ void easywin32::Window::open(string_type title, Rect bounds, Flags<Style> styleF
 
 	if (Window::shouldSkipCaption(styleFlags))
 	{
+		m_skipCaption = true;
+
 		Window::adjustWindowRect<true>(bounds, dwStyle, exStyleFlags);
 
 		this->internalOpen<true>(title, dwStyle, exStyleFlags, bounds.left, bounds.top,
@@ -1492,6 +1495,8 @@ void easywin32::Window::open(string_type title, Rect bounds, Flags<Style> styleF
 	}
 	else
 	{
+		m_skipCaption = false;
+
 		Window::adjustWindowRect<false>(bounds, dwStyle, exStyleFlags);
 
 		this->internalOpen<false>(title, dwStyle, exStyleFlags, bounds.left, bounds.top,
@@ -1522,6 +1527,8 @@ void easywin32::Window::open(string_type title, Size size, Flags<Style> styleFla
 
 	if (Window::shouldSkipCaption(styleFlags))
 	{
+		m_skipCaption = true;
+
 		Window::adjustWindowRect<true>(bounds, dwStyle, exStyleFlags);
 
 		this->internalOpen<true>(title, dwStyle, exStyleFlags, CW_USEDEFAULT, CW_USEDEFAULT,
@@ -1529,6 +1536,8 @@ void easywin32::Window::open(string_type title, Size size, Flags<Style> styleFla
 	}
 	else
 	{
+		m_skipCaption = false;
+
 		Window::adjustWindowRect<false>(bounds, dwStyle, exStyleFlags);
 
 		this->internalOpen<false>(title, dwStyle, exStyleFlags, CW_USEDEFAULT, CW_USEDEFAULT,
@@ -1585,6 +1594,46 @@ DWORD easywin32::Window::toNativeStyle(Flags<Style> styleFlags)
 }
 
 
+//!	@brief	Gets styles of the window.
+easywin32::Flags<easywin32::Style> easywin32::Window::getStyleFlags() const
+{
+	DWORD dwStyle = (DWORD)::GetWindowLongPtr(m_hWnd, GWL_STYLE);
+
+	Flags<Style> style = 0;
+	
+	if ((dwStyle & WS_BORDER) == WS_BORDER)
+		style |= Style::Border;
+
+	if ((dwStyle & WS_VISIBLE) == WS_VISIBLE)
+		style |= Style::Visible;
+
+	if ((dwStyle & WS_SYSMENU) == WS_SYSMENU)
+		style |= Style::SysMenu;
+
+	if ((dwStyle & WS_DISABLED) == WS_DISABLED)
+		style |= Style::Disabled;
+
+	if ((dwStyle & WS_THICKFRAME) == WS_THICKFRAME)
+		style |= Style::Resizable;
+
+	if ((dwStyle & WS_MINIMIZEBOX) == WS_MINIMIZEBOX)
+		style |= Style::MinimizeBox;
+
+	if ((dwStyle & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX)
+		style |= Style::MaximizeBox;
+
+	if ((dwStyle & WS_CAPTION) == WS_CAPTION)
+	{
+		style |= Style::ThickFrame;
+
+		if (!m_skipCaption)
+			style |= Style::Caption;
+	}
+
+	return style;
+}
+
+
 //!	@brief	Rest style of the window.
 void easywin32::Window::setStyle(Flags<Style> styleFlags)
 {
@@ -1600,12 +1649,16 @@ void easywin32::Window::setStyle(Flags<Style> styleFlags)
 
 	if (Window::shouldSkipCaption(styleFlags))
 	{
+		m_skipCaption = true;
+
 		Window::adjustWindowRect<true>(rect, dwStyle, (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
 
 		::SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)Window::procedure<true>);
 	}
 	else
 	{
+		m_skipCaption = false;
+
 		Window::adjustWindowRect<false>(rect, dwStyle, (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
 
 		::SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)Window::procedure<false>);
