@@ -1043,6 +1043,10 @@ public:
 	//!	@brief	Displays or hides the cursor.
 	void showCursor(bool bShow) { ::ShowCursor(bShow); }
 
+	//!	@brief	Set position of the window.
+	void setPos(int left, int top);
+	void setPos(int left, int top, int right, int bottom);
+
 	//!	@brief	Foreground the window.
 	void setForeground() { ::SetForegroundWindow(m_hWnd); }
 
@@ -1674,6 +1678,48 @@ void easywin32::Window::setExStyle(Flags<ExStyle> styleFlags)
 	::SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, static_cast<LONG_PTR>(styleFlags.mask));
 
 	::SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE);
+}
+
+
+//!	@brief	Set position of the window.
+void easywin32::Window::setPos(int left, int top)
+{
+	auto pos = this->getClientPos();
+
+	if ((pos.x != left) || (pos.y != top))
+	{
+		auto extent = this->getClientExtent();
+
+		Rect rect = { left, top, left + extent.cx, top + extent.cy };
+
+		if (m_skipCaption)
+			Window::adjustWindowRect<true>(rect, (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE), (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+		else
+			Window::adjustWindowRect<false>(rect, (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE), (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+
+		::SetWindowPos(m_hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED | SWP_NOZORDER);
+	}
+}
+
+
+//!	@brief	Set position of the window.
+void easywin32::Window::setPos(int left, int top, int right, int bottom)
+{
+	auto pos = this->getClientPos();
+
+	auto extent = this->getClientExtent();
+
+	if ((pos.x != left) || (pos.y != top) || (right - left != extent.cx) || (bottom - top != extent.cy))
+	{
+		Rect rect = { left, top, right, bottom };
+
+		if (m_skipCaption)
+			Window::adjustWindowRect<true>(rect, (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE), (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+		else
+			Window::adjustWindowRect<false>(rect, (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE), (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+
+		::SetWindowPos(m_hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED | SWP_NOZORDER);
+	}
 }
 
 
