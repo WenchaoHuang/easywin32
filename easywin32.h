@@ -1145,6 +1145,9 @@ public: // DWM section
 	//!	@brief	Controls the system-drawn backdrop material of a window, including behind the non-client area.
 	void setBackdrop(Backdrop backdrop){ ::DwmSetWindowAttribute(m_hWnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop, sizeof(backdrop)); }
 
+	//!	@brief	Enables or disables the DWM "blur-behind" effect for the window (aka. alpha-composition).
+	void enableBlurBeindWindow(bool enable);
+
 public:
 
 	/**
@@ -1717,6 +1720,26 @@ void easywin32::Window::setPos(int left, int top, int right, int bottom)
 			Window::adjustWindowRect<false>(rect, (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE), (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
 
 		::SetWindowPos(m_hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED | SWP_NOZORDER);
+	}
+}
+
+
+//!	@brief	Enables or disables the DWM "blur-behind" effect for the window (aka. alpha-composition).
+void easywin32::Window::enableBlurBeindWindow(bool enable)
+{
+	BOOL composition = FALSE;
+
+	if (SUCCEEDED(::DwmIsCompositionEnabled(&composition)) && composition)
+	{
+		HRGN region = ::CreateRectRgn(0, 0, -1, -1);
+
+		DWM_BLURBEHIND		bb = {};
+		bb.dwFlags			= DWM_BB_ENABLE | DWM_BB_BLURREGION;
+		bb.hRgnBlur			= enable ? region : NULL;
+		bb.fEnable			= enable ? TRUE : FALSE;
+
+		::DwmEnableBlurBehindWindow(m_hWnd, &bb);
+		::DeleteObject(region);
 	}
 }
 
