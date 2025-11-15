@@ -193,8 +193,9 @@ namespace easywin32
 		Caption				= Border | ThickFrame | (1 << 8),	//!< Title bar (include `Border` + `ThickFrame`)
 
 		// Combined styles
-		PopupWindow			= Border | SysMenu,
-		OverlappedWindow	= Caption | Resizable | SysMenu | MaximizeBox | MinimizeBox,
+		PopupWindow			= SysMenu | Border,
+		HeaderlessWindow	= SysMenu | Resizable | MaximizeBox | MinimizeBox,
+		OverlappedWindow	= SysMenu | Resizable | MaximizeBox | MinimizeBox | Caption,
 	};
 
 	//!	@brief	Enables bitwise operators (|, &, ~).
