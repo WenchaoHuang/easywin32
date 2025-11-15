@@ -1054,6 +1054,9 @@ public:
 	void setPos(int left, int top);
 	void setPos(int left, int top, int right, int bottom);
 
+	//!	@brief	Centers the window in the current monitor's work area.
+	void centerToScreen();
+
 	//!	@brief	Foreground the window.
 	void setForeground() { ::SetForegroundWindow(m_hWnd); }
 
@@ -1726,7 +1729,7 @@ void easywin32::Window::setPos(int left, int top)
 		else
 			Window::adjustWindowRect<false>(rect, (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE), (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
 
-		::SetWindowPos(m_hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED | SWP_NOZORDER);
+		::SetWindowPos(m_hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE);
 	}
 }
 
@@ -1749,6 +1752,26 @@ void easywin32::Window::setPos(int left, int top, int right, int bottom)
 
 		::SetWindowPos(m_hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED | SWP_NOZORDER);
 	}
+}
+
+
+//!	@brief	Centers the window in the current monitor's work area.
+void easywin32::Window::centerToScreen()
+{
+	HMONITOR hMon = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO mi = { sizeof(mi) };
+	::GetMonitorInfo(hMon, &mi);
+
+	auto extent = this->getClientExtent();
+	int workW = mi.rcWork.right - mi.rcWork.left;
+	int workH = mi.rcWork.bottom - mi.rcWork.top;
+	int winW = extent.cx;
+	int winH = extent.cy;
+
+	int x = mi.rcWork.left + (workW - winW) / 2;
+	int y = mi.rcWork.top + (workH - winH) / 2;
+
+	this->setPos(x, y);
 }
 
 

@@ -37,6 +37,7 @@ int main()
 {
 	EzWindow window;
 	window.open("EasyWin32-Test", EzRect{ 100, 100, 900, 700 }, EzStyle::OverlappedWindow, EzExStyle::AcceptFiles);
+	window.centerToScreen();
 	window.show();
 
 	std::vector<EzColorRGB> image(1920 * 1080, EzColorRGB{ 100, 200, 255 });

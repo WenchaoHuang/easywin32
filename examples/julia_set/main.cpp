@@ -85,6 +85,7 @@ int main()
 
 	EzWindow window;
 	window.open("Julia Set", EzSize{ width, height });
+	window.centerToScreen();
 	window.show();
 
 	window.onPaint = [&]()
