@@ -1366,20 +1366,17 @@ template<bool SkipCaption> LRESULT easywin32::Window::procedure(HWND hWnd, UINT 
 
 				if (window->onDropFiles)
 				{
-					UINT count = ::DragQueryFile(hDrop, 0xFFFFFFFF, nullptr, 0);
+					UINT count = ::DragQueryFile(hDrop, UINT32_MAX, nullptr, 0);
 
 					std::vector<string_type> filePaths(count);
 
 					for (UINT i = 0; i < count; ++i)
 					{
-					#ifdef UNICODE
-						wchar_t filePath[MAX_PATH];
-					#else
-						char filePath[MAX_PATH];
-					#endif
-						::DragQueryFile(hDrop, i, filePath, MAX_PATH);
+						UINT bufferSize = ::DragQueryFile(hDrop, i, nullptr, 0);
 
-						filePaths[i] = filePath;
+						filePaths[i].resize(bufferSize + 1, '\0');
+
+						::DragQueryFile(hDrop, i, filePaths[i].data(), bufferSize + 1);
 					}
 
 					result = window->onDropFiles(filePaths);
