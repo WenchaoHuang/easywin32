@@ -991,6 +991,12 @@ public:
 	//!	@brief	Returns the native handle of the win32 window.
 	HWND nativeHandle() { return m_hWnd; }
 
+	//!	@brief	Get the minimum window size allowed during resizing.
+	Size getMinTrackSize() const { return m_minTrackSize; }
+
+	//!	@brief	Get the maximum window size allowed during resizing.
+	Size getMaxTrackSize() const { return m_maxTrackSize; }
+
 	//!	@brief	Whether the specified window handle identifies an existing window (opened).	
 	bool isOpen() const { return ::IsWindow(m_hWnd); }
 
@@ -1062,6 +1068,12 @@ public:
 
 	//!	@brief	Minimized the window.
 	void minimize() { ::ShowWindow(m_hWnd, SW_SHOWMINIMIZED); }
+
+	//!	@brief	Set the minimum size the window can be resized to.
+	void setMinTrackSize(Size minSize) { m_minTrackSize = minSize; }
+
+	//!	@brief	Set the maximum size the window can be resized to.
+	void setMaxTrackSize(Size maxSize) { m_maxTrackSize = maxSize; }
 
 	//!	@brief	Enables or disables mouse and keyboard input to the specified window.
 	void enableInput(bool bEnable) { ::EnableWindow(m_hWnd, bEnable); }
@@ -1215,6 +1227,8 @@ public:
 private:
 
 	HWND		m_hWnd = nullptr;
+	Size		m_minTrackSize = { 120, 31 };
+	Size		m_maxTrackSize = { LONG_MAX, LONG_MAX };
 	bool		m_skipCaption = false;
 };
 
@@ -1278,6 +1292,20 @@ template<bool SkipCaption> LRESULT easywin32::Window::procedure(HWND hWnd, UINT 
 			}
 
 			return res;
+		}
+	}
+	else if (uMsg == WM_GETMINMAXINFO)
+	{
+		if (window != nullptr)
+		{
+			MINMAXINFO * mmi = (MINMAXINFO*)lParam;
+
+			mmi->ptMinTrackSize.x = window->m_minTrackSize.cx;
+			mmi->ptMinTrackSize.y = window->m_minTrackSize.cy;
+			mmi->ptMaxTrackSize.x = window->m_maxTrackSize.cx;
+			mmi->ptMaxTrackSize.y = window->m_maxTrackSize.cy;
+
+			return 0;
 		}
 	}
 	else if (uMsg == WM_DESTROY)	// Handle window destruction
