@@ -27,39 +27,47 @@ git clone https://github.com/WenchaoHuang/EasyWin32.git
 cd EasyWin32
 mkdir build
 cd build
-cmake ..
+cmake .. -DEZWIN32_BUILD_EXAMPLES=ON -DEZWIN32_BUILD_TESTS=ON
+cmake --build .
 ```
 
 ## Example:
 ```cpp
 #define EZWIN32_IMPLEMENTATION
 #include "easywin32.h"
+#include <chrono>
+#include <thread>
 
-EzWindow myWindow;
-myWindow.setTitle(L"EasyWin32");
-myWindow.setPos(100, 100, 900, 700);
-myWindow.setStyle(EzStyle::Overlapped);
-myWindow.open();
-myWindow.show();
+using namespace std::chrono_literals;
 
-// Setup callbacks
-myWindow.onKeyboardPress = [&](EzKey key, EzKeyAction action)
+int main()
 {
-    if ((key == EzKey::Escape) && (action == EzKeyAction::Press))
+    EzWindow window;
+    window.open("EasyWin32", 900, 700, EzStyle::OverlappedWindow);
+    window.centerToScreen();
+    window.show();
+
+    // Setup callbacks
+    window.onKeyboardPress = [&](EzKey key, EzKeyAction action)
     {
-        myWindow.close();
+        if ((key == EzKey::Escape) && (action == EzKeyAction::Press))
+        {
+            window.close();
+        }
+
+        return 0;
+    };
+
+    // Main loop
+    while (window.isOpen())
+    {
+        if (!window.processEvents())
+        {
+            std::this_thread::sleep_for(1ms);
+        }
     }
 
     return 0;
-};
-
-// Main loop
-while (myWindow.isOpen())
-{
-    if (!myWindow.processEvent())
-    {
-        std::this_tread::sleep_for(1ms);  // lazy wait
-    }
 }
 
 ```
